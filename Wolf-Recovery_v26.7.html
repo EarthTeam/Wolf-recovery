@@ -1,0 +1,1448 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Wolf Recovery — v26.5 (Integration Phase Language + Harmonized Colors)</title>
+  <style>
+    :root{
+      --headerH: 0px;
+     --pad: 12px; --radius: 14px; }
+    body { font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial, sans-serif; margin: 0; background:#f6f7f9; color:#111; }
+    header { padding: 18px 16px; background:#fff; border-bottom:1px solid #e6e8ee; position: sticky; top:0; z-index:10; }
+    header h1 { margin:0; font-size: 18px; }
+    header .sub { margin-top:6px; color:#555; font-size: 13px; line-height:1.3; }
+    main { padding: 16px; max-width: 1160px; margin: 0 auto; }
+    .grid { display:grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 980px){ .grid { grid-template-columns: 430px 1fr; align-items:start; } }
+    .card { background:#fff; border:1px solid #e6e8ee; border-radius: var(--radius); padding: 14px; }
+    .card h2 { margin: 0 0 10px; font-size: 15px; }
+    label { display:block; font-size: 12px; color:#333; margin: 10px 0 6px; }
+    input, select, textarea { width:100%; padding: 10px; border-radius: 10px; border:1px solid #d7dbe6; background:#fff; font-size: 14px; box-sizing:border-box; }
+    textarea { min-height: 64px; resize: vertical; }
+    .row2 { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+    .btnrow { display:flex; flex-wrap:wrap; gap: 8px; margin-top: 12px; }
+    button { border:1px solid #d7dbe6; background:#111; color:#fff; padding:10px 12px; border-radius: 10px; font-weight: 650; cursor:pointer; }
+    button.secondary { background:#fff; color:#111; }
+    button.danger { background:#b00020; border-color:#b00020; }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    .pill { display:inline-flex; align-items:center; gap:6px; border:1px solid #d7dbe6; padding: 6px 10px; border-radius: 999px; font-size: 12px; color:#222; background:#fff; }
+    .pillRow { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+
+    .phasePill{ display:inline-block; padding: 6px 10px; border-radius: 999px; font-weight: 700; font-size: 12px; border:1px solid #d7dbe6; background:#fff; color:#111; }
+    .phase-regulated{ background:#e7f6ec; border-color:#b8e0c4; }
+    .phase-lag{ background:#e7f0ff; border-color:#b8cdfa; }
+    .phase-transitional{ background:#f1eaff; border-color:#d0c2ff; }
+    .phase-reset{ background:#fde8e8; border-color:#f5b4b4; }
+
+    .kpi { display:grid; grid-template-columns: repeat(12, 1fr); gap: 12px; margin-top: 10px; }
+    .kpi .box { border:1px solid #e6e8ee; border-radius: 12px; padding: 10px; background:#fcfcfd; }
+
+/* KPI layout */
+.recBox{ grid-column: span 6; }
+.miniBox{ grid-column: span 3; }
+.crashBox{ grid-column: span 4; }
+.loadBox{ grid-column: span 4; }
+.fatigueBox{ grid-column: span 4; }
+.tensionBox{ grid-column: span 4; }
+.diurnalBox{ grid-column: span 4; }
+
+.val.big{ font-size: 18px; line-height: 1.25; font-weight: 750; }
+.whyBullets{ margin-top: 8px; }
+.whyBullets ul{ margin: 8px 0 0 18px; padding: 0; }
+.sub{ margin-top: 4px; color:#4b5563; font-size: 12.5px; }
+.micro{ margin-top: 6px; color:#6b7280; font-size: 12px; line-height: 1.25; }
+.crashBox{ background: #fff7ed; border-color: #fed7aa; }
+.fatigueBox{ background: #f8fafc; }
+.tensionBox{ background: #f8fafc; }
+.diurnalBox{ background: #f0fdf4; border-color: #bbf7d0; }
+
+@media (max-width: 980px){
+  .recBox{ grid-column: span 12; }
+  .miniBox{ grid-column: span 4; }
+  .crashBox,.fatigueBox,.tensionBox,.diurnalBox{ grid-column: span 6; }
+}
+@media (max-width: 680px){
+  .miniBox,.crashBox,.fatigueBox,.tensionBox,.diurnalBox{ grid-column: span 12; }
+}
+
+    .kpi .box .lbl { font-size: 11px; color:#555; }
+    .kpi .box .val { font-size: 18px; font-weight: 760; margin-top: 4px; }
+    .kpi .box .hint { font-size: 11px; color:#666; margin-top: 4px; line-height:1.2; }
+    table { width:100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+    th, td { padding: 8px 8px; border-bottom:1px solid #eef0f6; vertical-align: top; }
+    th { text-align:left; color:#444; font-weight: 700; position: sticky; top: calc(var(--headerH) + env(safe-area-inset-top)); background:#fff; z-index: 5; }
+    tr:hover td { background:#fbfbff; }
+    .tag { display:inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; border:1px solid #d7dbe6; background:#fff; }
+    .green { border-color:#1b7f3b; color:#1b7f3b; }
+    .blue { border-color:#1f5fbf; color:#1f5fbf; }
+    .yellow { border-color:#b07a00; color:#b07a00; }
+    .red { border-color:#b00020; color:#b00020; }
+    .muted { color:#666; }
+    .small { font-size: 11px; color:#666; line-height:1.2; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .hr { height:1px; background:#eef0f6; margin: 12px 0; }
+    .flex { display:flex; gap: 10px; flex-wrap:wrap; align-items:center; }
+    .right { margin-left:auto; }
+    .note { background:#f0f4ff; border:1px solid #d8e2ff; padding: 10px; border-radius: 12px; font-size: 12px; color:#203a86; line-height:1.35; }
+    .warn { background:#fff8e6; border:1px solid #ffe1a6; padding: 10px; border-radius: 12px; font-size: 12px; color:#6b4a00; line-height:1.35; }
+  
+    header .hdrRow{ display:flex; gap:14px; align-items:flex-start; justify-content:space-between; }
+    header .hdrLeft{ min-width: 0; }
+    header .hdrControls{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .btn{ appearance:none; border:1px solid #d6d9e2; background:#fff; border-radius: 12px; padding: 8px 10px; font-size:12px; cursor:pointer; }
+    .btn:hover{ background:#f3f4f7; }
+    .toggle{ display:flex; gap:8px; align-items:center; font-size:12px; color:#333; user-select:none; }
+    .toggle input{ transform: translateY(1px); }
+    .pill{ display:inline-block; margin-left:8px; font-size:11px; padding:3px 8px; border-radius:999px; border:1px solid #d6d9e2; background:#f7f8fb; color:#333; }
+    .pill.exp{ border-color:#c7d2fe; background:#eef2ff; }
+    .modalOverlay{ position:fixed; inset:0; background:rgba(0,0,0,.35); display:none; align-items:center; justify-content:center; z-index:999; padding:18px; }
+    .modal{ width:min(760px, 100%); background:#fff; border-radius:16px; border:1px solid #e6e8ee; box-shadow:0 12px 32px rgba(0,0,0,.18); padding:14px; }
+    .modal h3{ margin:0 0 8px; font-size:14px; }
+    .modal .closeRow{ display:flex; justify-content:space-between; gap:10px; align-items:center; }
+    .modal .log{ margin-top:10px; max-height: 62vh; overflow:auto; padding-right:6px; }
+    .logItem{ border-top:1px solid #eef0f5; padding:10px 0; }
+    .logItem:first-child{ border-top:none; padding-top:0; }
+    .logItem .ver{ font-weight:600; }
+    .logItem ul{ margin:6px 0 0 18px; padding:0; }
+
+  </style>
+</head>
+<body>
+<header>
+  <div class="hdrRow">
+    <div class="hdrLeft">
+      <h1>Wolf Recovery <span class="muted" id="appVersion">v26.5</span> <span class="pill" id="channelPill">Stable</span></h1>
+      <div class="sub">
+        Local-first app (single-file). Can store data in browser storage, or in a real <span class="mono">data.json</span> file (recommended), and later sync to Supabase.
+      </div>
+    </div>
+    <div class="hdrControls">
+      <button class="btn" id="btnChangelog" type="button" title="See what's changed">Changelog</button>
+      <label class="toggle" title="Experimental branch: changes analysis knobs; keep backups">
+        <input type="checkbox" id="chkExperimental">
+        <span>Experimental</span>
+      </label>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="grid">
+    <section class="card">
+      <h2>Data Location</h2>
+      <div class="note">
+        <div><b>Current source:</b> <span id="dataSource" class="mono">localStorage</span></div>
+        <div class="small">Recommended: open a <span class="mono">data.json</span> file once, then use “Save to File” so your data lives in your folder.</div>
+      </div>
+
+      <div class="btnrow" style="margin-top:10px">
+        <button id="openFileBtn" class="secondary">Open data.json</button>
+        <button id="saveFileBtn" class="secondary" disabled>Save to File</button>
+        <button id="exportJsonBtn" class="secondary">Export JSON</button>
+        <button id="importJsonBtn" class="secondary">Import JSON</button>
+        <button id="exportCsvBtn" class="secondary">Export CSV</button>
+        <button id="importCsvBtn">Import CSV</button>
+        <input id="importCsvInput" type="file" accept=".csv,text/csv" style="display:none" />
+      </div>
+  <div id="importStatus" class="small muted" style="margin-top:8px">Ready.</div>
+
+  <input id="importFileInput" type="file" accept="application/json" style="display:none" />
+
+      <div class="hr"></div>
+
+      <h2>Daily Entry</h2>
+
+      <label for="date">Date</label>
+      <input id="date" type="date" />
+
+      <div class="hr"></div>
+
+      <h2 style="margin-top:0">Device Metrics</h2>
+
+      
+      <h2 style="margin-top:0">Device Metrics</h2>
+
+      <div class="row3">
+        <div>
+          <label for="mReady">Morpheus Morning Readiness (%) <span class="small muted">(wake HRV test)</span></label>
+          <input id="mReady" type="number" step="1" min="0" max="100" />
+        </div>
+        <div>
+          <label for="mHrv">Morpheus HRV</label>
+          <input id="mHrv" type="number" step="1" min="0" />
+        </div>
+        <div>
+          <label for="whoopRec">Whoop Recovery (0–100) (optional)</label>
+          <input id="whoopRec" type="number" step="1" min="0" max="100" />
+        </div>
+      </div>
+      <div class="small muted" style="margin:-6px 0 10px 0">
+        Morpheus is a <b>morning snapshot</b> (your 2–3 min HRV check after waking). It does <b>not</b> measure overnight sleep; a low score can reflect an AM autonomic dip even after a decent night.
+      </div>
+
+      <div class="row3">
+        <div>
+          <label for="ouraRec">Oura Recovery (0–100)</label>
+          <input id="ouraRec" type="number" step="1" min="0" max="100" />
+        </div>
+        <div>
+          <label for="whoopRhr">Whoop RHR (bpm)</label>
+          <input id="whoopRhr" type="number" step="1" min="0" />
+        </div>
+        <div>
+          <label for="ouraRhr">Oura RHR (bpm)</label>
+          <input id="ouraRhr" type="number" step="1" min="0" />
+        </div>
+      </div>
+
+
+      <div class="row2">
+        <div>
+          <label for="steps">Steps (optional — fill later, after the day)</label>
+          <input id="steps" type="number" step="1" min="0" placeholder="Leave blank in the morning" />
+          <div class="small" style="margin-top:6px">
+            <label style="display:flex; gap:8px; align-items:center; margin:0">
+              <input id="morningEntry" type="checkbox" style="width:auto; margin:0" />
+              <span><b>Morning entry (steps pending)</b> — exclude steps from today’s Vote/Outliers until you fill them later.</span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <label for="fatigue">Fatigue (1–10)</label>
+          <input id="fatigue" type="number" step="1" min="1" max="10" />
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label for="amState">AM State (how you woke up)</label>
+          <select id="amState">
+            <option value="">—</option>
+            <option value="FLAT">Flat / Heavy</option>
+            <option value="MIXED">Mixed</option>
+            <option value="ONLINE">Online / Capable</option>
+          </select>
+        </div>
+        <div>
+          <label for="pmShift">PM Shift (did it lift later?)</label>
+          <select id="pmShift">
+            <option value="">—</option>
+            <option value="NO">Did not lift</option>
+            <option value="SOME">Lifted some</option>
+            <option value="CLEAR">Lifted clearly</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label for="liftTime">Lift time (optional)</label>
+          <select id="liftTime">
+            <option value="">—</option>
+            <option value="12">By ~12pm</option>
+            <option value="15">By ~3pm</option>
+            <option value="18">By ~6pm</option>
+            <option value="UNK">Unknown</option>
+          </select>
+        </div>
+        <div class="small muted" style="align-self:end; padding-bottom:6px">
+          Quick CFS/ADT nuance: this captures the “half-full” part of the day if the system regulates later.
+        </div>
+      </div>
+
+
+      <div class="row2">
+        <div>
+          <label for="resistance">Resistance Session?</label>Resistance Session?</label>
+          <select id="resistance">
+            <option value="N">No</option>
+            <option value="Y">Yes</option>
+          </select>
+        </div>
+        <div>
+          <label for="joint">Joint/Tendon Warning (0–10)</label>
+          <input id="joint" type="number" step="1" min="0" max="10" />
+        </div>
+        <div>
+          <label for="limiter">Primary Limiter (optional)</label>
+          <select id="limiter">
+            <option value="AUTO">Auto (detect)</option>
+            <option value="METABOLIC">Metabolic / neuro-energy</option>
+            <option value="MECHANICAL">Mechanical / joints</option>
+            <option value="MIXED">Mixed</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="notes">Notes</label>
+      <textarea id="notes" placeholder="sleep disruptions, meds timing, illness symptoms, travel, etc."></textarea>
+
+      <div class="hr"></div>
+
+      <div class="row2">
+        <div>
+          <label for="baseDays">Baseline window (days)</label>
+          <select id="baseDays">
+            <option value="7">7</option>
+            <option value="10">10</option>
+            <option value="14" selected>14</option>
+            <option value="21">21</option>
+          </select>
+        </div>
+        <div>
+          <label for="mode">Guardrail Mode</label>
+          <select id="mode">
+            <option value="standard">Standard</option>
+            <option value="adt" selected>ADT / joint-protective</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btnrow">
+        <button id="addBtn">Add / Update Day</button>
+        <button id="clearBtn" class="secondary">Clear Form</button>
+        <button id="bundleBtn" class="secondary">Copy Analysis Bundle</button>
+        <button id="resetBtn" class="danger">Reset All Data</button>
+      </div>
+
+      <div class="warn" style="margin-top:12px">
+        Decision-support only, not diagnosis. If you have concerning symptoms, seek medical care.
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="flex">
+        <h2 style="margin:0">Dashboard</h2>
+        <span class="pill right"><span class="muted">Entries:</span> <span id="entryCount" class="mono">0</span></span>
+        <span class="pill"><span class="muted">Baseline:</span> <span id="baselineLabel" class="mono">14d</span></span>
+        <span class="pill"><span class="muted">Mode:</span> <span id="modeLabel" class="mono">ADT</span></span>
+      </div>
+
+      <div class="kpi">
+  <div class="box recBox">
+    <div class="lbl">Today's Recommendation</div>
+    <div class="val big" id="todayRec">—</div>
+    <div class="whyBullets" id="todayWhy">—</div>
+  </div>
+
+  <div class="box miniBox">
+    <div class="lbl">Current Integration Phase</div>
+    <div class="val" id="todayVote">—</div>
+    <div class="hint">System-wide phase based on combined device signals, symptoms, and recent load.</div>
+  </div>
+
+  <div class="box miniBox">
+    <div class="lbl">Primary Limiter</div>
+    <div class="val" id="primaryLimiter">—</div>
+    <div class="hint" id="limiterWhy">Metabolic (neuro-energy), Mechanical (joints/tendons), or Mixed. You can override this in the form.</div>
+  </div>
+
+  <div class="box miniBox">
+    <div class="lbl">Confidence</div>
+    <div class="val" id="todayConf">—</div>
+    <div class="hint">Higher = stronger agreement + fewer outliers.</div>
+  </div>
+
+  <div class="box miniBox">
+    <div class="lbl">Odd-One-Out Device</div>
+    <div class="val" id="oddOneOut">—</div>
+    <div class="hint" id="oddWhy">—</div>
+  </div>
+
+  <div class="box crashBox">
+    <div class="lbl">Integration Stress Signature (24–72h)</div>
+    <div class="val" id="crashSig">—</div>
+    <div class="hint" id="crashWhy">—</div>
+  </div>
+
+  <div class="box loadBox">
+    <div class="lbl">Load Memory (PEM Reservoir)</div>
+    <div class="val" id="loadMem">—</div>
+    <div class="sub" id="loadMemStatus">—</div>
+    <div class="pillRow">
+      <span class="pill" id="capacityFlagPill" style="display:none"></span>
+      <span class="pill" id="clearancePill" style="display:none"></span>
+    </div>
+    <canvas id="loadChart" width="520" height="120" style="width:100%; height:120px; margin-top:8px; border-radius:12px; background:#fff;"></canvas>
+    <div class="hint" id="loadWhy">Shows unabsorbed movement-load over the last 7–10 days. Rising/plateau = integration load still in process; falling = clearing.</div>
+  </div>
+
+  <div class="box fatigueBox">
+    <div class="lbl">Neuro‑Energy (Fatigue)</div>
+    <div class="val" id="fatigueSig">—</div>
+    <div class="sub" id="fatigueDetail">—</div>
+    <div class="hint" id="fatigueWhy">—</div>
+  </div>
+
+  <div class="box tensionBox">
+    <div class="lbl">Signal Tension</div>
+    <div class="val" id="signalTension">—</div>
+    <div class="micro">What it means: signals point in different directions (often “capacity vs consolidation”). Not automatically a faulty device.</div>
+    <div class="hint" id="tensionWhy">—</div>
+  </div>
+
+  <div class="box diurnalBox">
+    <div class="lbl">Diurnal Arc (AM → PM)</div>
+    <div class="val" id="diurnalArc">—</div>
+    <div class="hint" id="diurnalWhy">—</div>
+  </div>
+</div>
+      <div class="hr"></div>
+
+      <h2>Entries</h2>
+      <div class="small">Tap a row to load it into the form for editing.</div>
+
+      <div style="overflow:auto; max-height: 560px; margin-top:10px;">
+        <table id="tbl">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Vote</th>
+              <th>Outliers</th>
+              <th>Conf</th>
+              <th>Rec</th>
+              <th class="muted">Notes</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="modalOverlay" id="changelogOverlay" role="dialog" aria-modal="true" aria-label="Changelog">
+    <div class="modal">
+      <div class="closeRow">
+        <h3>Changelog</h3>
+        <button class="btn" id="btnCloseChangelog" type="button">Close</button>
+      </div>
+      <div class="note" style="margin-top:6px;">
+        <b>Stable</b> keeps conservative defaults. <b>Experimental</b> tries different knobs (e.g., load sequencing and clearance behavior).
+        Export JSON backups before switching.
+      </div>
+      <div class="log" id="changelogList"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+/* Wolf Recovery — v26.5
+   Stability pass: import/export + backup/restore + load capacity flags + clearance badge
+   (Single-file / local-first)
+*/
+(() => {
+  'use strict';
+
+  const APP_VERSION = 'v26.5';
+  const LS_KEY = 'wolfRecovery.entries.v1';
+  const LS_BRANCH_KEY = 'wolfRecovery.branch';
+  const LS_EXPERIMENTAL_KEY = 'wolfRecovery.experimental';
+
+  // ---------- small utils ----------
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+  const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+  const num = (v) => {
+    if (v === null || v === undefined) return null;
+    const s = String(v).trim();
+    if (!s) return null;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+  };
+  const yn = (v) => {
+    const s = String(v ?? '').trim().toUpperCase();
+    if (!s) return 'N';
+    if (s === 'Y' || s === 'YES' || s === 'TRUE' || s === '1') return 'Y';
+    return 'N';
+  };
+  const mean = (arr) => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
+  const stdev = (arr) => {
+    if (arr.length < 2) return 0;
+    const m = mean(arr);
+    const v = arr.reduce((acc,x)=>acc+(x-m)*(x-m),0)/(arr.length-1);
+    return Math.sqrt(v);
+  };
+
+  const parseISODate = (s) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s||'').trim());
+    if (!m) return null;
+    const y = +m[1], mo = +m[2], d = +m[3];
+    if (mo<1||mo>12||d<1||d>31) return null;
+    return `${m[1]}-${m[2]}-${m[3]}`;
+  };
+
+  const escapeHTML = (s) =>
+    String(s ?? '').replace(/[&<>"']/g, (c) => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+
+  // ---------- DOM ----------
+  const els = {
+    // storage buttons
+    openFileBtn: $('#openFileBtn'),
+    saveFileBtn: $('#saveFileBtn'),
+    exportJsonBtn: $('#exportJsonBtn'),
+    importJsonBtn: $('#importJsonBtn'),
+    exportCsvBtn: $('#exportCsvBtn'),
+    importCsvBtn: $('#importCsvBtn'),
+    resetBtn: $('#resetBtn'),
+    importFileInput: $('#importFileInput'),
+    importCsvInput: $('#importCsvInput'),
+    importStatus: $('#importStatus'),
+
+    // dashboard cards (IDs as in the HTML)
+    recSig: $('#todayRec'),
+    recPlan: $('#todayRecPlan'),
+    recWhyBullets: $('#todayWhy'),
+
+    voteSig: $('#todayVote'),
+    voteWhy: $('#todayVoteWhy'),
+
+    confSig: $('#todayConf'),
+    confWhy: $('#todayConfWhy'),
+
+    oddSig: $('#oddOneOut'),
+    oddWhy: $('#oddOneOutWhy'),
+
+    crashSigTitle: $('#crashSigTitle'),
+    crashSigBullets: $('#crashSigBullets'),
+    crashSigFooter: $('#crashSigFooter'),
+
+    loadSig: $('#loadMemVal'),
+    loadWhy: $('#loadMemDetails'),
+    loadChart: $('#loadChart'),
+
+    fatigueTitle: $('#fatigueTitle'),
+    fatigueBullets: $('#fatigueBullets'),
+
+    tensionSig: $('#signalTensionVal'),
+    tensionWhy: $('#signalTensionHelp'),
+
+    diurnalArc: $('#diurnalTitle'),
+    diurnalWhy: $('#diurnalDetails'),
+
+    // history table
+    tblBody: $('#tbl tbody'),
+  };
+
+  function setImportStatus(msg, type='info') {
+    if (!els.importStatus) return;
+    els.importStatus.textContent = msg;
+    els.importStatus.dataset.type = type;
+  }
+
+  // ---------- data model ----------
+  function normalizeEntry(e) {
+    // canonical keys used by app
+    const out = {
+      date: parseISODate(e.date) || null,
+      mReady: num(e.mReady),
+      mHrv: num(e.mHrv ?? e.mHRV),
+      ouraRec: num(e.ouraRec),
+      whoopRec: num(e.whoopRec),
+      whoopRhr: num(e.whoopRhr ?? e.whoopRHR),
+      ouraRhr: num(e.ouraRhr ?? e.ouraRHR),
+      steps: num(e.steps),
+      fatigue: num(e.fatigue),
+      amState: (e.amState ?? '').toString(),
+      pmShift: (e.pmShift ?? '').toString(),
+      liftTime: (e.liftTime ?? '').toString(),
+      resistance: yn(e.resistance ?? e.res),
+      joint: num(e.joint),
+      notes: (e.notes ?? '').toString(),
+    };
+    if (!out.date) return null;
+    return out;
+  }
+
+  function loadEntries() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return [];
+      const norm = arr.map(normalizeEntry).filter(Boolean);
+      norm.sort((a,b)=>a.date.localeCompare(b.date));
+      return dedupeByDate(norm);
+    } catch {
+      return [];
+    }
+  }
+
+  function saveEntries(entries) {
+    const deduped = dedupeByDate(entries);
+    deduped.sort((a,b)=>a.date.localeCompare(b.date));
+    localStorage.setItem(LS_KEY, JSON.stringify(deduped));
+  }
+
+  function dedupeByDate(entries) {
+    const map = new Map();
+    for (const e of entries) {
+      if (!e?.date) continue;
+      map.set(e.date, e);
+    }
+    return Array.from(map.values());
+  }
+
+  function getBranch() {
+    return localStorage.getItem(LS_BRANCH_KEY) || 'main';
+  }
+  function setBranch(v) {
+    localStorage.setItem(LS_BRANCH_KEY, v);
+  }
+  function getExperimental() {
+    return (localStorage.getItem(LS_EXPERIMENTAL_KEY) || '0') === '1';
+  }
+  function setExperimental(on) {
+    localStorage.setItem(LS_EXPERIMENTAL_KEY, on ? '1' : '0');
+  }
+
+  // ---------- baseline + outliers ----------
+  const METRICS = [
+    ['mReady','Morpheus Ready'],
+    ['mHrv','Morpheus HRV'],
+    ['ouraRec','Oura Recovery'],
+    ['whoopRec','Whoop Recovery'],
+    ['whoopRhr','Whoop RHR'],
+    ['ouraRhr','Oura RHR'],
+    ['steps','Steps'],
+    ['fatigue','Fatigue'],
+  ];
+
+  function baselineFor(entries, idx, days) {
+    const start = Math.max(0, idx - days);
+    const slice = entries.slice(start, idx);
+    const base = {};
+    for (const [k] of METRICS) {
+      const vals = slice.map(e => num(e[k])).filter(v => v !== null);
+      base[k] = {
+        n: vals.length,
+        mean: mean(vals),
+        sd: stdev(vals),
+      };
+    }
+    return base;
+  }
+
+  function zFor(v, base) {
+    if (v === null || base.n < 3 || base.sd === 0) return null;
+    return (v - base.mean) / base.sd;
+  }
+
+  function computeOutliers(entry, base, opts) {
+    const outliers = [];
+    for (const [k,label] of METRICS) {
+      const v = num(entry[k]);
+      if (v === null) continue;
+
+      // steps pending: treat as "not yet entered"
+      if (k === 'steps' && opts.stepsPending) continue;
+
+      const b = base[k];
+      const z = zFor(v, b);
+      const zAbs = z === null ? 0 : Math.abs(z);
+      const zFlag = z !== null && zAbs >= 1.6;
+      const absFlag =
+        (k === 'mReady' && b.n >= 3 && (b.mean - v) >= 10) ||
+        (k === 'ouraRec' && b.n >= 3 && (b.mean - v) >= 10) ||
+        (k === 'ouraRhr' && b.n >= 3 && (v - b.mean) >= 6);
+
+      if (zFlag || absFlag) {
+        outliers.push({ key:k, label, z, absFlag });
+      }
+    }
+    return outliers;
+  }
+
+  // ---------- LoadMem, capacity flags, clearance ----------
+  const HIGH_STEPS = 9500;
+
+  function dailyLoadPoints(e, opts) {
+    // steps drives aerobic load; resistance is a smaller increment for now
+    const steps = num(e.steps);
+    const stepsLoad = (steps === null || opts.stepsPending) ? 0 : clamp(steps / HIGH_STEPS, 0, 1.6);
+    const resLoad = (yn(e.resistance) === 'Y') ? 0.25 : 0;
+    // subjective load nudge: if fatigue high but "desk heavy" in notes, add small cognitive load
+    const notes = (e.notes || '').toLowerCase();
+    const deskHeavy = /(desk|email|grant|zoom|calls|meeting|proposal|report)/.test(notes);
+    const cogLoad = deskHeavy ? 0.15 : 0;
+    return stepsLoad + resLoad + cogLoad;
+  }
+
+  function computeLoadMemSeries(entries) {
+    // adaptive decay: faster clearance when load is low AND fatigue <=4
+    let mem = 0;
+    const series = [];
+    let clearStreak = 0;
+
+    for (let i=0;i<entries.length;i++) {
+      const e = entries[i];
+      const stepsPending = (e.steps === null);
+      const load = dailyLoadPoints(e, { stepsPending });
+
+      const fatigue = num(e.fatigue) ?? 5;
+      const lowLoad = load < 0.55;
+      const clearingToday = lowLoad && fatigue <= 4;
+
+      // decay slightly stronger on clearing days
+      const decay = clearingToday ? 0.65 : 0.78;
+      mem = mem * decay + load * 0.35;
+      mem = clamp(mem, 0, 1.5);
+
+      if (clearingToday) clearStreak += 1;
+      else clearStreak = 0;
+
+      series.push({ date: e.date, mem, load, clearStreak });
+    }
+    return series;
+  }
+
+  function twoConsecutiveHighSteps(entries, idx) {
+    if (idx < 2) return false;
+    const a = num(entries[idx-1].steps);
+    const b = num(entries[idx-2].steps);
+    return (a !== null && b !== null && a >= HIGH_STEPS && b >= HIGH_STEPS);
+  }
+
+  function loadApproachingCapacity(entries, idx, loadMemNow) {
+    const high2 = twoConsecutiveHighSteps(entries, idx);
+    const high3 = idx >= 3 && [1,2,3].every(k => num(entries[idx-k].steps) !== null && num(entries[idx-k].steps) >= HIGH_STEPS);
+    const memHigh = loadMemNow >= 0.75;
+    return { flag: high2 || high3 || memHigh, why: high3 ? '3 high-step days stacked' : high2 ? '2 high-step days stacked' : memHigh ? 'LoadMem elevated' : '' };
+  }
+
+  function clearanceBadge(loadMemNow, clearStreak) {
+    if (loadMemNow < 0.25 && clearStreak >= 2) return { label: `Clearance: in the clear (${clearStreak} calm days)`, level: 'good' };
+    if (clearStreak >= 2) return { label: `Clearance: clearing (${clearStreak} calm days)`, level: 'ok' };
+    if (loadMemNow >= 0.9) return { label: 'Clearance: not started (load still high)', level: 'warn' };
+    return { label: 'Clearance: in progress', level: 'ok' };
+  }
+
+  // ---------- Phase + recommendation ----------
+  function scoreDeviceOK(entry) {
+    // 0..3 "OK votes" from devices (simple thresholds)
+    const ok = [];
+    const mReady = num(entry.mReady);
+    const ouraRec = num(entry.ouraRec);
+    const whoopRec = num(entry.whoopRec);
+
+    if (mReady !== null) ok.push(mReady >= 75);
+    if (ouraRec !== null) ok.push(ouraRec >= 80);
+    if (whoopRec !== null) ok.push(whoopRec >= 55);
+    return ok;
+  }
+
+  function fatigueSignal(entry) {
+    const f = num(entry.fatigue);
+    if (f === null) return 'NEUTRAL';
+    if (f >= 7) return 'STRESSED';
+    if (f <= 3) return 'OK';
+    return 'NEUTRAL';
+  }
+
+  function currentIntegrationPhase(entry, okVotes, outliers, loadMemNow, opts) {
+    const f = num(entry.fatigue) ?? 5;
+    const stepsPending = opts.stepsPending;
+    const disagrees = (okVotes.filter(Boolean).length !== 0 && okVotes.filter(Boolean).length !== okVotes.length); // mixed
+    const highLoad = loadMemNow >= 0.75;
+
+    // primary dysregulation (rare): severe fatigue + physiologic strain markers
+    const ouraRec = num(entry.ouraRec);
+    const whoopRec = num(entry.whoopRec);
+    const ouraRhr = num(entry.ouraRhr);
+
+    const strain = (ouraRec !== null && ouraRec <= 70) || (whoopRec !== null && whoopRec <= 40) || (ouraRhr !== null && ouraRhr >= 58);
+
+    if (f >= 8 && strain) return 'PRIMARY DYSREGULATION (acute disruption)';
+
+    // integration lag: fatigue high or outliers, often after stacked load
+    if (f >= 7) return 'INTEGRATION LAG — Delayed Absorption';
+    if (outliers.length >= 2 && !disagrees) return 'INTEGRATION LAG — Delayed Absorption';
+    if (highLoad && f >= 5) return 'INTEGRATION LAG — Delayed Absorption';
+
+    // transitional: mixed device votes or signal tension
+    if (disagrees || outliers.length === 1) return 'TRANSITIONAL (system re-tuning)';
+
+    // regulated: most signals stable
+    return 'REGULATED';
+  }
+
+  function recommendationFor(phase, entry, loadFlags, clearance, opts) {
+    const f = num(entry.fatigue) ?? 5;
+    const joint = num(entry.joint) ?? 5;
+
+    // base recommendation buckets
+    let title = '';
+    let bullets = [];
+    let mantra = '';
+
+    const jointBias = joint >= 5;
+
+    if (phase.startsWith('PRIMARY')) {
+      title = 'Morning Protection — Restore';
+      mantra = 'Acute disruption: protect, reduce stimulus, let integration re-start.';
+      bullets = [
+        'Rest first. Keep stimulation low.',
+        'If you move: a few minutes, flat, stop early.',
+        'No strength today unless it clearly improves symptoms.',
+        'Reassess later (3–5 pm).',
+      ];
+    } else if (phase.startsWith('INTEGRATION LAG')) {
+      title = 'Scout Then Roam — De-stack';
+      mantra = 'Integration is underway. Capacity may be present, but neuro-energy hasn’t come online yet.';
+      bullets = [
+        'Scout: short, flat, conversational movement.',
+        'No “testing.” No hills “just to see.” Stop early if heaviness increases.',
+        'If you feel better after regulating, you can extend gently.',
+      ];
+    } else if (phase.startsWith('TRANSITIONAL')) {
+      title = 'Modulate & Observe — Stay in Motion';
+      mantra = 'Transition day. Use gentle movement to refine the picture.';
+      bullets = [
+        'Keep the walk easy/conversational; prefer flatter routes.',
+        'Reassess after ~3–5 pm before adding intensity.',
+      ];
+    } else {
+      title = 'Expand Carefully — Roam (easy hills OK)';
+      mantra = 'Build durability: system looks harmonized. Maintain rhythm.';
+      bullets = [
+        'Walk naturally; easy hills OK if it stays smooth.',
+        'Finish strong (no wobble). End feeling you could do more.',
+        'Strength only if joints tolerate and it improves symptoms.',
+      ];
+    }
+
+    // overlays
+    if (loadFlags.flag) {
+      bullets.unshift(`Load approaching capacity (${loadFlags.why}) → treat today as a scout / de-stack day.`);
+      if (!title.includes('Scout')) title = title.replace('Expand Carefully', 'Explore (Scout)').replace('Modulate & Observe', 'Modulate & Observe');
+    }
+
+    if (jointBias) {
+      bullets.push('Joint-protective bias: shorten stride, avoid deep knee bend, keep ROM pain-free.');
+    }
+
+    // clearance badge note (kept gentle)
+    bullets.push(clearance.label);
+
+    // morning-entry note about steps
+    if (opts.stepsPending) bullets.push('Steps pending (morning entry): load scoring will update once steps are entered.');
+
+    return { title, bullets, mantra };
+  }
+
+  // ---------- Diurnal fatigue ----------
+  function diurnalSummary(entry) {
+    // Use three simple selectors: AM state, PM shift, lift time.
+    const am = (entry.amState || '').trim();
+    const pm = (entry.pmShift || '').trim();
+    const lt = (entry.liftTime || '').trim();
+
+    let arc = 'No diurnal note recorded';
+    let why = [];
+
+    if (am || pm || lt) {
+      arc = 'Diurnal arc recorded';
+      if (am) why.push(`AM: ${am}`);
+      if (pm) why.push(`PM shift: ${pm}`);
+      if (lt) why.push(`Lift time: ${lt}`);
+      if (/lift/i.test(pm) || /improve|better|lift/i.test(lt)) {
+        why.push('Signal: regulation came online later (encouraging pattern).');
+      }
+      if (/worse|crash|flat|heavy/i.test(am) && (/lift|better|improve/i.test(pm) || /lift|better|improve/i.test(lt))) {
+        why.push('Memory protection: don’t let the morning overwrite the afternoon recovery.');
+      }
+    }
+    return { arc, why };
+  }
+
+  // ---------- render ----------
+  let entries = loadEntries();
+  let selectedDate = null;
+
+  function updateHeader() {
+    if (els.versionPill) els.versionPill.textContent = APP_VERSION;
+    if (els.branchPill) els.branchPill.textContent = getBranch();
+    if (els.expBtn) els.expBtn.textContent = getExperimental() ? 'Experimental: ON' : 'Experimental: OFF';
+  }
+
+  function formatBullets(items) {
+    return `<ul>${items.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ul>`;
+  }
+
+  function renderDashboard() {
+    if (!entries.length) {
+      if (els.todayPhase) els.todayPhase.textContent = 'No entries yet';
+      if (els.todayMantra) els.todayMantra.textContent = '';
+      return;
+    }
+
+    const viewDate = selectedDate || entries[entries.length - 1].date;
+    const idx = entries.findIndex(e => e.date === viewDate);
+    const e = entries[idx];
+    if (!e) return;
+
+    const baselineDays = Number(els.baselineDays?.value || 14);
+    const base = baselineFor(entries, idx, baselineDays);
+
+    const stepsPending = (e.steps === null);
+    const outliers = computeOutliers(e, base, { stepsPending });
+
+    const loadSeries = computeLoadMemSeries(entries);
+    const loadNow = loadSeries[idx]?.mem ?? 0;
+    const clearStreak = loadSeries[idx]?.clearStreak ?? 0;
+
+    const okVotes = scoreDeviceOK(e);
+    const phase = currentIntegrationPhase(e, okVotes, outliers, loadNow, { stepsPending });
+
+    const loadFlags = loadApproachingCapacity(entries, idx, loadNow);
+    const clearBadge = clearanceBadge(loadNow, clearStreak);
+
+    const rec = recommendationFor(phase, e, loadFlags, clearBadge, { stepsPending });
+
+    // cards
+    if (els.todayPhase) els.todayPhase.textContent = `Current Integration Phase: ${phase}`;
+    if (els.todayMantra) els.todayMantra.textContent = rec.mantra;
+    if (els.todayRecTitle) els.todayRecTitle.textContent = rec.title;
+    if (els.todayRecPlan) els.todayRecPlan.innerHTML = formatBullets(rec.bullets);
+
+    const why = [];
+    const joint = num(e.joint);
+    if (joint !== null && joint >= 5) why.push(`Joint warning ${joint}/10 → joint-protective bias`);
+    if (outliers.length) why.push(`${outliers.length} outlier signal(s) vs baseline`);
+    const voteTrue = okVotes.filter(Boolean).length;
+    if (voteTrue > 0 && voteTrue < okVotes.length) why.push('Devices disagree → uncertainty day');
+    if (stepsPending) why.push('Steps not yet entered (morning entry) → excluded from load/outliers');
+    if (loadFlags.flag) why.push(`Load approaching capacity: ${loadFlags.why}`);
+
+    if (els.todayWhy) els.todayWhy.innerHTML = why.length ? formatBullets(why) : '<div class="muted">No special flags today.</div>';
+
+    if (els.todayMeta) {
+      const fs = fatigueSignal(e);
+      els.todayMeta.textContent = `Fatigue signal: ${fs} · LoadMem: ${loadNow.toFixed(2)} · Clearance streak: ${clearStreak} day(s)`;
+    }
+
+    // Crash Signature card (simple v1)
+    const crashLabels = [];
+    const f = num(e.fatigue) ?? 5;
+    if (phase.startsWith('PRIMARY')) crashLabels.push('Acute disruption markers present');
+    else if (phase.startsWith('INTEGRATION LAG')) crashLabels.push('Delayed absorption likely (lag window)');
+    else if (phase.startsWith('TRANSITIONAL')) crashLabels.push('Re-tuning / mixed signals');
+    else crashLabels.push('Stable / regulated');
+
+    if (els.crashSig) els.crashSig.textContent = crashLabels[0];
+    if (els.crashWhy) els.crashWhy.innerHTML = formatBullets([
+      `Fatigue: ${f}/10`,
+      `LoadMem: ${loadNow.toFixed(2)} (${clearBadge.label})`,
+      outliers.length ? `Outliers: ${outliers.map(o=>o.label).join(', ')}` : 'Outliers: none',
+    ]);
+
+    // Fatigue card
+    if (els.fatigueSig) els.fatigueSig.textContent = fatigueSignal(e);
+    if (els.fatigueWhy) {
+      els.fatigueWhy.innerHTML = formatBullets([
+        `Self-rated fatigue: ${(num(e.fatigue) ?? '—')}/10`,
+        (e.amState || e.pmShift || e.liftTime) ? 'Diurnal arc recorded (see Diurnal card).' : 'No diurnal arc recorded today.',
+      ]);
+    }
+
+    // Signal tension
+    const tension = (okVotes.filter(Boolean).length > 0 && okVotes.filter(Boolean).length < okVotes.length) || outliers.length >= 2;
+    if (els.tensionSig) els.tensionSig.textContent = tension ? 'YES' : 'NO';
+    if (els.tensionWhy) els.tensionWhy.innerHTML = formatBullets([
+      tension ? 'Mixed device votes or multiple deviations → treat as uncertainty.' : 'Signals broadly aligned.',
+      'Use the walk to refine the picture, not to test limits.',
+    ]);
+
+    // Load Memory card
+    if (els.loadSig) {
+      const pct = clamp(loadNow / 1.0, 0, 1);
+      const bar = `<div class="bar"><div class="barFill" style="width:${Math.round(pct*100)}%"></div></div>`;
+      els.loadSig.innerHTML = `${bar}<div class="small muted">LoadMem ${loadNow.toFixed(2)} · Daily steps target line: ${HIGH_STEPS.toLocaleString()}</div>`;
+    }
+    if (els.loadWhy) {
+      const load = loadSeries[idx]?.load ?? 0;
+      const items = [
+        `Today’s load points: ${load.toFixed(2)} (steps + resistance + cognitive cue)`,
+        loadFlags.flag ? `Flag: Load approaching capacity (${loadFlags.why})` : 'No stacking flag today.',
+        clearBadge.label,
+      ];
+      els.loadWhy.innerHTML = formatBullets(items);
+    }
+
+    // Diurnal card
+    const di = diurnalSummary(e);
+    if (els.diurnalArc) els.diurnalArc.textContent = di.arc;
+    if (els.diurnalWhy) els.diurnalWhy.innerHTML = di.why.length ? formatBullets(di.why) : '<div class="muted">Add AM/PM notes to capture regulation timing.</div>';
+
+    // Load chart (sparkline)
+    drawLoadChart(loadSeries, idx);
+  }
+
+  
+
+function drawLoadChart(loadSeries, idx){
+  const canvas = els.loadChart;
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if(!ctx) return;
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+
+  // Use last 14 points ending at idx
+  const N = 14;
+  const start = Math.max(0, idx-(N-1));
+  const pts = loadSeries.slice(start, idx+1);
+  if(pts.length < 2) {
+    // tiny placeholder
+    ctx.globalAlpha = 0.6;
+    ctx.fillText('—', 10, h/2);
+    ctx.globalAlpha = 1;
+    return;
+  }
+  const maxV = Math.max(0.5, ...pts.map(p=>p.v||0));
+  const minV = 0;
+  const pad = 6;
+
+  const x = (i)=> pad + (w-2*pad) * (i/(pts.length-1));
+  const y = (v)=> h-pad - (h-2*pad) * ((v-minV)/(maxV-minV));
+
+  // baseline
+  ctx.globalAlpha = 0.25;
+  ctx.beginPath();
+  ctx.moveTo(pad, h-pad);
+  ctx.lineTo(w-pad, h-pad);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // line
+  ctx.beginPath();
+  ctx.moveTo(x(0), y(pts[0].v||0));
+  for(let i=1;i<pts.length;i++) ctx.lineTo(x(i), y(pts[i].v||0));
+  ctx.stroke();
+
+  // dot for today
+  ctx.beginPath();
+  ctx.arc(x(pts.length-1), y(pts[pts.length-1].v||0), 2.5, 0, Math.PI*2);
+  ctx.fill();
+}
+function renderTable() {
+    if (!els.tblBody) return;
+    els.tblBody.innerHTML = '';
+    const rows = [...entries].sort((a,b)=>b.date.localeCompare(a.date));
+    for (const e of rows) {
+      const tr = document.createElement('tr');
+      const steps = (e.steps === null) ? '' : String(e.steps);
+      tr.innerHTML = `
+        <td><button class="linkBtn" data-date="${escapeHTML(e.date)}">${escapeHTML(e.date)}</button></td>
+        <td>${escapeHTML(e.mReady ?? '')}</td>
+        <td>${escapeHTML(e.mHrv ?? '')}</td>
+        <td>${escapeHTML(e.ouraRec ?? '')}</td>
+        <td>${escapeHTML(e.whoopRec ?? '')}</td>
+        <td>${escapeHTML(e.whoopRhr ?? '')}</td>
+        <td>${escapeHTML(e.ouraRhr ?? '')}</td>
+        <td>${escapeHTML(steps)}</td>
+        <td>${escapeHTML(e.fatigue ?? '')}</td>
+        <td>${escapeHTML(e.resistance ?? '')}</td>
+        <td>${escapeHTML(e.joint ?? '')}</td>
+        <td class="notesCell" title="${escapeHTML(e.notes||'')}">${escapeHTML((e.notes||'').slice(0,60))}</td>
+      `;
+      els.tblBody.appendChild(tr);
+    }
+    $$('.linkBtn', els.tblBody).forEach(btn => {
+      btn.addEventListener('click', () => {
+        const d = btn.getAttribute('data-date');
+        selectedDate = d;
+        loadToForm(d);
+        renderAll();
+      });
+    });
+  }
+
+  function renderAll() {
+    updateHeader();
+    renderDashboard();
+    renderTable();
+  }
+
+  // ---------- form ----------
+  function clearForm() {
+    const today = new Date();
+    const iso = today.toISOString().slice(0,10);
+    if (els.date) els.date.value = iso;
+    ['mReady','mHrv','ouraRec','whoopRec','whoopRhr','ouraRhr','steps','fatigue','joint'].forEach(k=>{
+      if (els[k]) els[k].value = '';
+    });
+    if (els.resistance) els.resistance.value = 'N';
+    if (els.amState) els.amState.value = '';
+    if (els.pmShift) els.pmShift.value = '';
+    if (els.liftTime) els.liftTime.value = '';
+    if (els.notes) els.notes.value = '';
+  }
+
+  function loadToForm(date) {
+    const e = entries.find(x => x.date === date);
+    if (!e) return;
+    if (els.date) els.date.value = e.date;
+    if (els.mReady) els.mReady.value = e.mReady ?? '';
+    if (els.mHrv) els.mHrv.value = e.mHrv ?? '';
+    if (els.ouraRec) els.ouraRec.value = e.ouraRec ?? '';
+    if (els.whoopRec) els.whoopRec.value = e.whoopRec ?? '';
+    if (els.whoopRhr) els.whoopRhr.value = e.whoopRhr ?? '';
+    if (els.ouraRhr) els.ouraRhr.value = e.ouraRhr ?? '';
+    if (els.steps) els.steps.value = e.steps ?? '';
+    if (els.fatigue) els.fatigue.value = e.fatigue ?? '';
+    if (els.joint) els.joint.value = e.joint ?? '';
+    if (els.resistance) els.resistance.value = e.resistance ?? 'N';
+    if (els.amState) els.amState.value = e.amState ?? '';
+    if (els.pmShift) els.pmShift.value = e.pmShift ?? '';
+    if (els.liftTime) els.liftTime.value = e.liftTime ?? '';
+    if (els.notes) els.notes.value = e.notes ?? '';
+  }
+
+  function readFromForm() {
+    const e = normalizeEntry({
+      date: els.date?.value,
+      mReady: els.mReady?.value,
+      mHrv: els.mHrv?.value,
+      ouraRec: els.ouraRec?.value,
+      whoopRec: els.whoopRec?.value,
+      whoopRhr: els.whoopRhr?.value,
+      ouraRhr: els.ouraRhr?.value,
+      steps: els.steps?.value,
+      fatigue: els.fatigue?.value,
+      amState: els.amState?.value,
+      pmShift: els.pmShift?.value,
+      liftTime: els.liftTime?.value,
+      resistance: els.resistance?.value,
+      joint: els.joint?.value,
+      notes: els.notes?.value,
+    });
+    return e;
+  }
+
+  function upsertEntry(e) {
+    entries = entries.filter(x => x.date !== e.date);
+    entries.push(e);
+    entries.sort((a,b)=>a.date.localeCompare(b.date));
+    saveEntries(entries);
+  }
+
+  function deleteEntry(date) {
+    entries = entries.filter(x => x.date !== date);
+    saveEntries(entries);
+  }
+
+  // ---------- export / import ----------
+  async function saveAsTextFile(suggestedName, content, mime='application/json') {
+    // File System Access API (Chrome/Edge desktop; not iOS Safari)
+    if (window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName,
+          types: [{ description: 'File', accept: { [mime]: ['.json', '.csv'] } }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(content);
+        await writable.close();
+        setImportStatus(`Saved: ${suggestedName}`, 'ok');
+        return;
+      } catch (err) {
+        // fall back to normal download
+      }
+    }
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = suggestedName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportJSON() {
+    const payload = {
+      app: 'Wolf Recovery',
+      version: APP_VERSION,
+      exportedAt: new Date().toISOString(),
+      entries,
+    };
+    return JSON.stringify(payload, null, 2);
+  }
+
+  function exportCSV() {
+    const headers = [
+      'Date','MorpheusReady','MorpheusHRV','OuraRecovery','WhoopRecovery','WhoopRHR','OuraRHR','Steps','Fatigue',
+      'AMState','PMShift','LiftTime','Resistance','JointWarn','Notes'
+    ];
+    const rows = [headers.join(',')];
+    for (const e of entries) {
+      const row = [
+        e.date,
+        e.mReady ?? '',
+        e.mHrv ?? '',
+        e.ouraRec ?? '',
+        e.whoopRec ?? '',
+        e.whoopRhr ?? '',
+        e.ouraRhr ?? '',
+        e.steps ?? '',
+        e.fatigue ?? '',
+        `"${String(e.amState||'').replace(/"/g,'""')}"`,
+        `"${String(e.pmShift||'').replace(/"/g,'""')}"`,
+        `"${String(e.liftTime||'').replace(/"/g,'""')}"`,
+        e.resistance ?? 'N',
+        e.joint ?? '',
+        `"${String(e.notes||'').replace(/"/g,'""')}"`
+      ];
+      rows.push(row.join(','));
+    }
+    return rows.join('\n');
+  }
+
+  function parseCSV(text) {
+    // Simple CSV parser that handles quoted commas.
+    const lines = String(text || '').split(/\r?\n/).filter(l => l.trim().length);
+    if (!lines.length) return [];
+    const parseLine = (line) => {
+      const out = [];
+      let cur = '';
+      let inQ = false;
+      for (let i=0;i<line.length;i++) {
+        const ch = line[i];
+        if (inQ) {
+          if (ch === '"') {
+            if (line[i+1] === '"') { cur += '"'; i++; }
+            else inQ = false;
+          } else cur += ch;
+        } else {
+          if (ch === '"') inQ = true;
+          else if (ch === ',') { out.push(cur); cur=''; }
+          else cur += ch;
+        }
+      }
+      out.push(cur);
+      return out;
+    };
+
+    const header = parseLine(lines[0]).map(h => h.trim());
+    const idx = (name) => header.findIndex(h => h.toLowerCase() === name.toLowerCase());
+
+    // accept both "date" and "Date"
+    const dateIdx = idx('date') >= 0 ? idx('date') : idx('Date');
+    if (dateIdx < 0) {
+      const found = header.join(', ');
+      throw new Error(`missing required column "date". Found headers: ${found}`);
+    }
+
+    const out = [];
+    for (let r=1;r<lines.length;r++) {
+      const cols = parseLine(lines[r]);
+      const rawDate = cols[dateIdx];
+      const date = parseISODate(rawDate);
+      if (!date) continue;
+
+      const get = (name) => {
+        const i = idx(name);
+        return i >= 0 ? cols[i] : '';
+      };
+
+      const entry = normalizeEntry({
+        date,
+        mReady: get('MorpheusReady'),
+        mHrv: get('MorpheusHRV'),
+        ouraRec: get('OuraRecovery'),
+        whoopRec: get('WhoopRecovery'),
+        whoopRhr: get('WhoopRHR'),
+        ouraRhr: get('OuraRHR'),
+        steps: get('Steps'),
+        fatigue: get('Fatigue'),
+        amState: get('AMState'),
+        pmShift: get('PMShift'),
+        liftTime: get('LiftTime'),
+        resistance: get('Resistance'),
+        joint: get('JointWarn'),
+        notes: get('Notes'),
+      });
+      if (entry) out.push(entry);
+    }
+    return out;
+  }
+
+  function parseJSON(text) {
+    const obj = JSON.parse(text);
+    if (Array.isArray(obj)) {
+      return obj.map(normalizeEntry).filter(Boolean);
+    }
+    if (obj && Array.isArray(obj.entries)) {
+      return obj.entries.map(normalizeEntry).filter(Boolean);
+    }
+    // maybe it's a map keyed by date
+    if (obj && typeof obj === 'object') {
+      const vals = Object.values(obj);
+      if (vals.every(v => v && typeof v === 'object')) {
+        return vals.map(normalizeEntry).filter(Boolean);
+      }
+    }
+    return [];
+  }
+
+  function mergeImported(imported) {
+    const before = entries.length;
+    entries = dedupeByDate(entries.concat(imported));
+    entries.sort((a,b)=>a.date.localeCompare(b.date));
+    saveEntries(entries);
+    const after = entries.length;
+    setImportStatus(`Imported ${imported.length} row(s). Total now: ${after} (was ${before}).`, 'ok');
+    selectedDate = entries[entries.length - 1]?.date || null;
+    renderAll();
+  }
+
+  async function readFileAsText(file) {
+    return await file.text();
+  }
+
+  // ---------- events ----------
+  function wireEvents() {
+    els.saveBtn?.addEventListener('click', () => {
+      const e = readFromForm();
+      if (!e) { alert('Please enter a valid date (YYYY-MM-DD).'); return; }
+      upsertEntry(e);
+      selectedDate = e.date;
+      renderAll();
+    });
+
+    els.clearBtn?.addEventListener('click', () => {
+      clearForm();
+      selectedDate = null;
+      renderAll();
+    });
+
+    els.deleteBtn?.addEventListener('click', () => {
+      const d = parseISODate(els.date?.value);
+      if (!d) return;
+      if (!confirm(`Delete entry for ${d}?`)) return;
+      deleteEntry(d);
+      selectedDate = null;
+      clearForm();
+      renderAll();
+    });
+
+    els.baselineDays?.addEventListener('change', renderAll);
+
+    els.exportJsonBtn?.addEventListener('click', async () => {
+      const name = `Wolf-Recovery_${APP_VERSION}_${new Date().toISOString().slice(0,10)}.json`;
+      await saveAsTextFile(name, exportJSON(), 'application/json');
+    });
+
+    els.exportCsvBtn?.addEventListener('click', async () => {
+      const name = `Wolf-Recovery_${APP_VERSION}_${new Date().toISOString().slice(0,10)}.csv`;
+      await saveAsTextFile(name, exportCSV(), 'text/csv');
+    });
+
+    els.importJsonBtn?.addEventListener('click', () => {
+      setImportStatus('Choose a JSON backup to import…', 'info');
+      els.importFileInput?.click();
+    });
+
+    els.importCsvBtn?.addEventListener('click', () => {
+      setImportStatus('Choose a CSV backup to import…', 'info');
+      els.importCsvInput?.click();
+    });
+
+    els.importFileInput?.addEventListener('change', async (ev) => {
+      const file = ev.target.files?.[0];
+      ev.target.value = '';
+      if (!file) return;
+      try {
+        const text = await readFileAsText(file);
+        const imported = parseJSON(text);
+        if (!imported.length) throw new Error('No entries found in JSON.');
+        mergeImported(imported);
+      } catch (err) {
+        setImportStatus(`Import failed: ${err.message || String(err)}`, 'err');
+        alert(`Import failed: ${err.message || String(err)}`);
+      }
+    });
+
+    els.importCsvInput?.addEventListener('change', async (ev) => {
+      const file = ev.target.files?.[0];
+      ev.target.value = '';
+      if (!file) return;
+      try {
+        const text = await readFileAsText(file);
+        const imported = parseCSV(text);
+        if (!imported.length) throw new Error('No entries found in CSV.');
+        mergeImported(imported);
+      } catch (err) {
+        setImportStatus(`Import failed: ${err.message || String(err)}`, 'err');
+        alert(`Import failed: ${err.message || String(err)}`);
+      }
+    });
+
+    els.resetBtn?.addEventListener('click', () => {
+      if (!confirm('This will erase all locally stored Wolf Recovery data on this device/browser. Continue?')) return;
+      localStorage.removeItem(LS_KEY);
+      entries = [];
+      selectedDate = null;
+      clearForm();
+      setImportStatus('Local data cleared.', 'info');
+      renderAll();
+    });
+
+    // Experimental toggle + changelog panel (kept lightweight)
+    els.expBtn?.addEventListener('click', () => {
+      const on = !getExperimental();
+      setExperimental(on);
+      updateHeader();
+      setImportStatus(`Experimental ${on ? 'ON' : 'OFF'}.`, 'info');
+    });
+
+    els.changelogBtn?.addEventListener('click', () => {
+      if (!els.changelogPanel) return;
+      const open = els.changelogPanel.classList.toggle('open');
+      if (open && els.changelogBody) {
+        els.changelogBody.innerHTML = `
+          <div class="small muted">Experimental changelog (local-only)</div>
+          <ul>
+            <li><b>${APP_VERSION}</b>: Import/Export fixed; Load approaching capacity flag; Clearance badge; unified script.</li>
+            <li><b>v26.5</b>: Experimental branch scaffolding + in-app changelog panel.</li>
+          </ul>
+        `;
+      }
+    });
+  }
+
+  // ---------- init ----------
+  function init() {
+    updateHeader();
+    if (!entries.length) clearForm();
+    else {
+      // default to latest
+      selectedDate = entries[entries.length - 1].date;
+      loadToForm(selectedDate);
+    }
+    wireEvents();
+    renderAll();
+    setImportStatus('Ready.', 'ok');
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
+<!-- Recommendation Distinctions -->
+<div class="rec-legend">
+  <h4>Movement Guidance (ADT / CFS)</h4>
+  <ul>
+    <li><strong>Maintain Rhythm — Go Wolf:</strong> Full walk. Natural pace. Hills allowed. Movement is the regulator.</li>
+    <li><strong>Modulate & Observe — Stay in Motion:</strong> Full walk, gentler. End better than you started.</li>
+    <li><strong>Morning Protection — Prime, Don’t Train:</strong> Short (10–30 min). Flat, slow, exploratory only.</li>
+    <li><strong>Restore First — Movement Only If Regulating:</strong> Very short or none. Stability before motion.</li>
+  </ul>
+</div>
