@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Wolf Recovery — v26.4 (Integration Phase Language + Harmonized Colors)</title>
+  <title>Wolf Recovery — v26.3 (Integration Phase Language + Harmonized Colors)</title>
   <style>
     :root{
       --headerH: 0px;
@@ -86,44 +86,13 @@
     .right { margin-left:auto; }
     .note { background:#f0f4ff; border:1px solid #d8e2ff; padding: 10px; border-radius: 12px; font-size: 12px; color:#203a86; line-height:1.35; }
     .warn { background:#fff8e6; border:1px solid #ffe1a6; padding: 10px; border-radius: 12px; font-size: 12px; color:#6b4a00; line-height:1.35; }
-  
-    header .hdrRow{ display:flex; gap:14px; align-items:flex-start; justify-content:space-between; }
-    header .hdrLeft{ min-width: 0; }
-    header .hdrControls{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .btn{ appearance:none; border:1px solid #d6d9e2; background:#fff; border-radius: 12px; padding: 8px 10px; font-size:12px; cursor:pointer; }
-    .btn:hover{ background:#f3f4f7; }
-    .toggle{ display:flex; gap:8px; align-items:center; font-size:12px; color:#333; user-select:none; }
-    .toggle input{ transform: translateY(1px); }
-    .pill{ display:inline-block; margin-left:8px; font-size:11px; padding:3px 8px; border-radius:999px; border:1px solid #d6d9e2; background:#f7f8fb; color:#333; }
-    .pill.exp{ border-color:#c7d2fe; background:#eef2ff; }
-    .modalOverlay{ position:fixed; inset:0; background:rgba(0,0,0,.35); display:none; align-items:center; justify-content:center; z-index:999; padding:18px; }
-    .modal{ width:min(760px, 100%); background:#fff; border-radius:16px; border:1px solid #e6e8ee; box-shadow:0 12px 32px rgba(0,0,0,.18); padding:14px; }
-    .modal h3{ margin:0 0 8px; font-size:14px; }
-    .modal .closeRow{ display:flex; justify-content:space-between; gap:10px; align-items:center; }
-    .modal .log{ margin-top:10px; max-height: 62vh; overflow:auto; padding-right:6px; }
-    .logItem{ border-top:1px solid #eef0f5; padding:10px 0; }
-    .logItem:first-child{ border-top:none; padding-top:0; }
-    .logItem .ver{ font-weight:600; }
-    .logItem ul{ margin:6px 0 0 18px; padding:0; }
-
   </style>
 </head>
 <body>
 <header>
-  <div class="hdrRow">
-    <div class="hdrLeft">
-      <h1>Wolf Recovery <span class="muted" id="appVersion">v26.4</span> <span class="pill" id="channelPill">Stable</span></h1>
-      <div class="sub">
-        Local-first app (single-file). Can store data in browser storage, or in a real <span class="mono">data.json</span> file (recommended), and later sync to Supabase.
-      </div>
-    </div>
-    <div class="hdrControls">
-      <button class="btn" id="btnChangelog" type="button" title="See what's changed">Changelog</button>
-      <label class="toggle" title="Experimental branch: changes analysis knobs; keep backups">
-        <input type="checkbox" id="chkExperimental">
-        <span>Experimental</span>
-      </label>
-    </div>
+  <h1>Wolf Recovery <span class="muted">v26.3</span></h1>
+  <div class="sub">
+    Local-first app (single-file). Can store data in browser storage, or in a real <span class="mono">data.json</span> file (recommended), and later sync to Supabase.
   </div>
 </header>
 
@@ -409,68 +378,9 @@
       </div>
     </section>
   </div>
-
-  <div class="modalOverlay" id="changelogOverlay" role="dialog" aria-modal="true" aria-label="Changelog">
-    <div class="modal">
-      <div class="closeRow">
-        <h3>Changelog</h3>
-        <button class="btn" id="btnCloseChangelog" type="button">Close</button>
-      </div>
-      <div class="note" style="margin-top:6px;">
-        <b>Stable</b> keeps conservative defaults. <b>Experimental</b> tries different knobs (e.g., load sequencing and clearance behavior).
-        Export JSON backups before switching.
-      </div>
-      <div class="log" id="changelogList"></div>
-    </div>
-  </div>
-
 </main>
 
 <script>
-
-  // ---------------------------
-  // Version + branch controls
-  // ---------------------------
-  const APP_VERSION = "v26.4";
-  const LS_EXPERIMENTAL = "wolfRecovery_experimental";
-  const CHANGELOG = [
-    { ver: "v26.4", items: [
-      "Added in-app changelog panel.",
-      "Added Stable / Experimental branch toggle (stored locally).",
-      "Experimental branch is for testing; export backups before switching."
-    ]},
-    { ver: "v26.3", items: [
-      "Load approaching capacity flag + clearance framing.",
-      "Bias for ADT/CFS timing and load sequencing."
-    ]}
-  ];
-
-  function isExperimental(){ return localStorage.getItem(LS_EXPERIMENTAL) === "1"; }
-  function setExperimental(on){ localStorage.setItem(LS_EXPERIMENTAL, on ? "1" : "0"); }
-
-  function renderChangelog(){
-    const list = document.getElementById("changelogList");
-    if (!list) return;
-    list.innerHTML = CHANGELOG.map(x => {
-      const li = x.items.map(i => `<li>${escapeHTML(i)}</li>`).join("");
-      return `<div class="logItem"><div class="ver">${escapeHTML(x.ver)}</div><ul>${li}</ul></div>`;
-    }).join("");
-  }
-  function openChangelog(){ renderChangelog(); const ov=document.getElementById("changelogOverlay"); if (ov) ov.style.display="flex"; }
-  function closeChangelog(){ const ov=document.getElementById("changelogOverlay"); if (ov) ov.style.display="none"; }
-
-  function syncHeaderUI(){
-    const v=document.getElementById("appVersion"); if (v) v.textContent = APP_VERSION;
-    const pill=document.getElementById("channelPill");
-    const chk=document.getElementById("chkExperimental");
-    const exp=isExperimental();
-    if (chk) chk.checked = exp;
-    if (pill){
-      pill.textContent = exp ? "Experimental" : "Stable";
-      pill.classList.toggle("exp", exp);
-    }
-  }
-
 
   function escapeHTML(str){
     return String(str ?? "")
@@ -733,9 +643,7 @@
     // If the TWO prior calendar days were both high-step days (>= 9500),
     // recommend a Scout day today (move, but de-stack load).
     // ----------------------------
-    const HIGH_STEPS_STABLE = 9500;
-    const HIGH_STEPS_EXPERIMENTAL = 9000; // more sensitive
-    const HIGH_STEPS = () => (isExperimental() ? HIGH_STEPS_EXPERIMENTAL : HIGH_STEPS_STABLE);
+    const HIGH_STEPS = 9500;
 
     function _daysDiff(aISO, bISO){
       const a = new Date(aISO + "T00:00:00");
@@ -758,7 +666,7 @@
         const s1 = (d1.steps == null ? null : Number(d1.steps));
         const s2 = (d2.steps == null ? null : Number(d2.steps));
 
-        if (consecutive && s1 != null && s2 != null && s1 >= HIGH_STEPS() && s2 >= HIGH_STEPS()){
+        if (consecutive && s1 != null && s2 != null && s1 >= HIGH_STEPS && s2 >= HIGH_STEPS){
           loadStackFlag = true;
         }
       }
@@ -902,7 +810,7 @@ if (_depth===0){
       .map(e => (e.steps==null ? null : Number(e.steps)))
       .filter(v => v!=null && !isNaN(v) && v>0);
 
-    const highDays = stepsVals.filter(v => v >= HIGH_STEPS()).length;
+    const highDays = stepsVals.filter(v => v >= HIGH_STEPS).length;
     const sumSteps = stepsVals.reduce((a,b)=>a+b,0);
 
     const recentLoad = (highDays >= 2) || (highDays >= 1 && sumSteps >= 20000);
@@ -1298,7 +1206,7 @@ function computeLoadMemorySeries(entries, viewDate){
     loads.push(dailyLoad);
 
     // attach fields for later use (thresholds & missing flags)
-    r.__highSteps = Number.isFinite(steps) && steps>= HIGH_STEPS();
+    r.__highSteps = Number.isFinite(steps) && steps>=HIGH_STEPS;
     r.__stepsMissing = stepsMissing;
   });
 
@@ -2112,27 +2020,6 @@ function importFromJSONText(jsonText){
     });
   }
 })();
-
-
-  // Branch + changelog UI wiring
-  document.addEventListener("DOMContentLoaded", () => {
-    syncHeaderUI();
-    const b1=document.getElementById("btnChangelog");
-    const b2=document.getElementById("btnCloseChangelog");
-    const ov=document.getElementById("changelogOverlay");
-    if (b1) b1.addEventListener("click", openChangelog);
-    if (b2) b2.addEventListener("click", closeChangelog);
-    if (ov) ov.addEventListener("click", (e)=>{ if(e.target===ov) closeChangelog(); });
-
-    const chk=document.getElementById("chkExperimental");
-    if (chk){
-      chk.addEventListener("change", () => {
-        setExperimental(chk.checked);
-        syncHeaderUI();
-        try { render(); } catch(e){}
-      });
-    }
-  });
 
 </script>
 </body>
